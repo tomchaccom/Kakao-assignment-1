@@ -7,13 +7,16 @@ const currentDateElement = document.getElementById('current-date');
 const dateListElement = document.getElementById('date-list');
 const previousDateButton = document.getElementById('prev-date-btn');
 const nextDateButton = document.getElementById('next-date-btn');
+const TODO_STORAGE_KEY = 'todo-list';
 
 let todos = [];
 let currentFilter = 'all';
 let selectedDate = new Date();
 
 function init() {
+    loadTodosFromStorage();
     renderDatePicker();
+    renderTodos();
 
     addButton.addEventListener('click', handleAddTodo);
     previousDateButton.addEventListener('click', () => changeSelectedDate(-7));
@@ -52,6 +55,7 @@ function handleAddTodo() {
     };
 
     todos.push(newTodo);
+    saveTodosToStorage();
     renderTodos();
 
     todoInput.value = '';
@@ -65,6 +69,23 @@ function showError(shouldShow) {
     }
 
     errorMessage.classList.add('hidden');
+}
+
+function saveTodosToStorage() {
+    localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos));
+}
+
+function loadTodosFromStorage() {
+    const storedTodos = localStorage.getItem(TODO_STORAGE_KEY);
+
+    if (storedTodos === null) {
+        return;
+    }
+
+    todos = JSON.parse(storedTodos).map(todo => ({
+        ...todo,
+        isEditing: false
+    }));
 }
 
 function changeSelectedDate(dayAmount) {
@@ -146,6 +167,7 @@ function formatDayName(date) {
 
 function deleteTodo(todoId) {
     todos = todos.filter(todo => todo.id !== todoId);
+    saveTodosToStorage();
     renderTodos();
 }
 
@@ -158,6 +180,7 @@ function toggleComplete(todoId) {
         return todo;
     });
 
+    saveTodosToStorage();
     renderTodos();
 }
 
@@ -189,6 +212,7 @@ function saveEdit(todoId, newText) {
         return todo;
     });
 
+    saveTodosToStorage();
     renderTodos();
 }
 
