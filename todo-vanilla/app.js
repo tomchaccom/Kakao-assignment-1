@@ -3,12 +3,21 @@ const addButton = document.getElementById('add-btn');
 const todoList = document.getElementById('todo-list');
 const errorMessage = document.getElementById('error-message');
 const filterButtons = document.querySelectorAll('.filter-btn');
+const currentDateElement = document.getElementById('current-date');
+const dateListElement = document.getElementById('date-list');
+const previousDateButton = document.getElementById('prev-date-btn');
+const nextDateButton = document.getElementById('next-date-btn');
 
 let todos = [];
 let currentFilter = 'all';
+let selectedDate = new Date();
 
 function init() {
+    renderDatePicker();
+
     addButton.addEventListener('click', handleAddTodo);
+    previousDateButton.addEventListener('click', () => changeSelectedDate(-7));
+    nextDateButton.addEventListener('click', () => changeSelectedDate(7));
 
     todoInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
@@ -37,6 +46,7 @@ function handleAddTodo() {
     const newTodo = {
         id: Date.now().toString(),
         text: todoText,
+        date: formatDateKey(selectedDate),
         isCompleted: false,
         isEditing: false
     };
@@ -55,6 +65,83 @@ function showError(shouldShow) {
     }
 
     errorMessage.classList.add('hidden');
+}
+
+function changeSelectedDate(dayAmount) {
+    selectedDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate() + dayAmount
+    );
+
+    renderDatePicker();
+    renderTodos();
+}
+
+function selectDate(date) {
+    selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    renderDatePicker();
+    renderTodos();
+}
+
+function renderDatePicker() {
+    const weekDates = getWeekDates(selectedDate);
+    const weekStartDate = weekDates[0];
+    const weekEndDate = weekDates[weekDates.length - 1];
+
+    currentDateElement.textContent = `${formatDateKey(weekStartDate)} ~ ${formatDateKey(weekEndDate)}`;
+    dateListElement.innerHTML = '';
+
+    weekDates.forEach((date) => {
+        const dateButton = document.createElement('button');
+        const isSelected = formatDateKey(date) === formatDateKey(selectedDate);
+
+        dateButton.className = `date-card ${isSelected ? 'active' : ''}`;
+        dateButton.type = 'button';
+        dateButton.innerHTML = `
+            <span class="date-day">${formatDayName(date)}</span>
+            <span class="date-number">${date.getDate()}</span>
+        `;
+        dateButton.addEventListener('click', () => selectDate(date));
+
+        dateListElement.appendChild(dateButton);
+    });
+}
+
+function getWeekDates(date) {
+    const weekStartDate = getWeekStartDate(date);
+    const weekDates = [];
+
+    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+        weekDates.push(new Date(
+            weekStartDate.getFullYear(),
+            weekStartDate.getMonth(),
+            weekStartDate.getDate() + dayIndex
+        ));
+    }
+
+    return weekDates;
+}
+
+function getWeekStartDate(date) {
+    const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate() - dayIndex);
+}
+
+function formatDateKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return [year, month, day].join('-');
+}
+
+function formatDayName(date) {
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+
+    return dayNames[date.getDay()];
 }
 
 function deleteTodo(todoId) {
@@ -129,15 +216,18 @@ function changeFilter(filterValue) {
 }
 
 function getFilteredTodos() {
+    const selectedDateKey = formatDateKey(selectedDate);
+    const selectedDateTodos = todos.filter(todo => todo.date === selectedDateKey);
+
     if (currentFilter === 'active') {
-        return todos.filter(todo => !todo.isCompleted);
+        return selectedDateTodos.filter(todo => !todo.isCompleted);
     }
 
     if (currentFilter === 'completed') {
-        return todos.filter(todo => todo.isCompleted);
+        return selectedDateTodos.filter(todo => todo.isCompleted);
     }
 
-    return todos;
+    return selectedDateTodos;
 }
 
 function renderTodos() {
