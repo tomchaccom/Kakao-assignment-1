@@ -108,6 +108,11 @@ header h1 {
     color: white;
 }
 
+.date-card.today:not(.active) {
+    outline: 2px solid #672be0;
+    background-color: #fbf9ff;
+}
+
 .date-day {
     font-size: 11px;
     font-weight: 700;
@@ -116,6 +121,16 @@ header h1 {
 .date-number {
     font-size: 13px;
     font-weight: 800;
+}
+
+.date-count {
+    color: #777;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.date-card.active .date-count {
+    color: white;
 }
 
 /* 입력 섹션 */

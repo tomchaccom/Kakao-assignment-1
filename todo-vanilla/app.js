@@ -7,13 +7,16 @@ const currentDateElement = document.getElementById('current-date');
 const dateListElement = document.getElementById('date-list');
 const previousDateButton = document.getElementById('prev-date-btn');
 const nextDateButton = document.getElementById('next-date-btn');
+const TODO_STORAGE_KEY = 'todo-list';
 
 let todos = [];
 let currentFilter = 'all';
 let selectedDate = new Date();
 
 function init() {
+    loadTodosFromStorage();
     renderDatePicker();
+    renderTodos();
 
     addButton.addEventListener('click', handleAddTodo);
     previousDateButton.addEventListener('click', () => changeSelectedDate(-7));
@@ -52,6 +55,8 @@ function handleAddTodo() {
     };
 
     todos.push(newTodo);
+    saveTodosToStorage();
+    renderDatePicker();
     renderTodos();
 
     todoInput.value = '';
@@ -65,6 +70,23 @@ function showError(shouldShow) {
     }
 
     errorMessage.classList.add('hidden');
+}
+
+function saveTodosToStorage() {
+    localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos));
+}
+
+function loadTodosFromStorage() {
+    const storedTodos = localStorage.getItem(TODO_STORAGE_KEY);
+
+    if (storedTodos === null) {
+        return;
+    }
+
+    todos = JSON.parse(storedTodos).map(todo => ({
+        ...todo,
+        isEditing: false
+    }));
 }
 
 function changeSelectedDate(dayAmount) {
@@ -95,18 +117,26 @@ function renderDatePicker() {
 
     weekDates.forEach((date) => {
         const dateButton = document.createElement('button');
-        const isSelected = formatDateKey(date) === formatDateKey(selectedDate);
+        const dateKey = formatDateKey(date);
+        const todoCount = getTodoCountByDate(dateKey);
+        const isSelected = dateKey === formatDateKey(selectedDate);
+        const isToday = dateKey === formatDateKey(new Date());
 
-        dateButton.className = `date-card ${isSelected ? 'active' : ''}`;
+        dateButton.className = `date-card ${isSelected ? 'active' : ''} ${isToday ? 'today' : ''}`;
         dateButton.type = 'button';
         dateButton.innerHTML = `
             <span class="date-day">${formatDayName(date)}</span>
             <span class="date-number">${date.getDate()}</span>
+            <span class="date-count">${todoCount}개</span>
         `;
         dateButton.addEventListener('click', () => selectDate(date));
 
         dateListElement.appendChild(dateButton);
     });
+}
+
+function getTodoCountByDate(dateKey) {
+    return todos.filter(todo => todo.date === dateKey).length;
 }
 
 function getWeekDates(date) {
@@ -146,6 +176,8 @@ function formatDayName(date) {
 
 function deleteTodo(todoId) {
     todos = todos.filter(todo => todo.id !== todoId);
+    saveTodosToStorage();
+    renderDatePicker();
     renderTodos();
 }
 
@@ -158,6 +190,8 @@ function toggleComplete(todoId) {
         return todo;
     });
 
+    saveTodosToStorage();
+    renderDatePicker();
     renderTodos();
 }
 
@@ -189,6 +223,8 @@ function saveEdit(todoId, newText) {
         return todo;
     });
 
+    saveTodosToStorage();
+    renderDatePicker();
     renderTodos();
 }
 
