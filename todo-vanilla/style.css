@@ -28,7 +28,7 @@ body {
 
 /* 헤더 */
 header {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
@@ -36,6 +36,86 @@ header h1 {
     color: #672be0; /* 메인 컬러 적용 */
     font-size: 28px;
     font-weight: 700;
+}
+
+.date-section {
+    margin-bottom: 20px;
+}
+
+.date-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
+    background-color: #f1eefb;
+    border-radius: 8px;
+}
+
+.date-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background-color: transparent;
+    color: #672be0;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.date-btn:hover {
+    background-color: rgba(103, 43, 224, 0.12);
+}
+
+.current-date {
+    flex: 1;
+    color: #672be0;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.date-list {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.date-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    min-height: 56px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f1f1f3;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.date-card:hover {
+    background-color: #e5dcfb;
+}
+
+.date-card.active {
+    background-color: #672be0;
+    color: white;
+}
+
+.date-day {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.date-number {
+    font-size: 13px;
+    font-weight: 800;
 }
 
 /* 입력 섹션 */
@@ -190,6 +270,22 @@ header h1 {
 @media (max-width: 480px) {
     .btn-group {
         opacity: 1;
+    }
+
+    .date-header {
+        gap: 8px;
+    }
+
+    .current-date {
+        font-size: 12px;
+    }
+
+    .date-list {
+        gap: 4px;
+    }
+
+    .date-card {
+        min-height: 52px;
     }
 }
 
