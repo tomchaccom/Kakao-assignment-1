@@ -87,6 +87,37 @@ header h1 {
     display: none;
 }
 
+.filter-section {
+    display: flex;
+    gap: 8px;
+    margin: 18px 0 16px;
+    padding: 4px;
+    background-color: #f1eefb;
+    border-radius: 8px;
+}
+
+.filter-btn {
+    flex: 1;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 0;
+    background-color: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.filter-btn.active {
+    background-color: #672be0;
+    color: white;
+}
+
+.filter-btn:hover:not(.active) {
+    color: #672be0;
+}
+
 /* 할 일 목록 */
 #todo-list {
     list-style: none;

@@ -2,8 +2,10 @@ const todoInput = document.getElementById('todo-input');
 const addButton = document.getElementById('add-btn');
 const todoList = document.getElementById('todo-list');
 const errorMessage = document.getElementById('error-message');
+const filterButtons = document.querySelectorAll('.filter-btn');
 
 let todos = [];
+let currentFilter = 'all';
 
 function init() {
     addButton.addEventListener('click', handleAddTodo);
@@ -12,6 +14,12 @@ function init() {
         if (event.key === 'Enter') {
             handleAddTodo();
         }
+    });
+
+    filterButtons.forEach((filterButton) => {
+        filterButton.addEventListener('click', () => {
+            changeFilter(filterButton.dataset.filter);
+        });
     });
 }
 
@@ -109,14 +117,39 @@ function cancelEdit(todoId) {
     renderTodos();
 }
 
+function changeFilter(filterValue) {
+    currentFilter = filterValue;
+
+    filterButtons.forEach((filterButton) => {
+        const isSelected = filterButton.dataset.filter === currentFilter;
+        filterButton.classList.toggle('active', isSelected);
+    });
+
+    renderTodos();
+}
+
+function getFilteredTodos() {
+    if (currentFilter === 'active') {
+        return todos.filter(todo => !todo.isCompleted);
+    }
+
+    if (currentFilter === 'completed') {
+        return todos.filter(todo => todo.isCompleted);
+    }
+
+    return todos;
+}
+
 function renderTodos() {
     todoList.innerHTML = '';
 
-    if (todos.length === 0) {
+    const filteredTodos = getFilteredTodos();
+
+    if (filteredTodos.length === 0) {
         return;
     }
 
-    todos.forEach(todo => {
+    filteredTodos.forEach(todo => {
         const li = document.createElement('li');
         li.className = `todo-item ${todo.isCompleted ? 'completed' : ''}`;
 
