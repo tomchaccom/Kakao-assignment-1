@@ -56,6 +56,7 @@ function handleAddTodo() {
 
     todos.push(newTodo);
     saveTodosToStorage();
+    renderDatePicker();
     renderTodos();
 
     todoInput.value = '';
@@ -116,18 +117,26 @@ function renderDatePicker() {
 
     weekDates.forEach((date) => {
         const dateButton = document.createElement('button');
-        const isSelected = formatDateKey(date) === formatDateKey(selectedDate);
+        const dateKey = formatDateKey(date);
+        const todoCount = getTodoCountByDate(dateKey);
+        const isSelected = dateKey === formatDateKey(selectedDate);
+        const isToday = dateKey === formatDateKey(new Date());
 
-        dateButton.className = `date-card ${isSelected ? 'active' : ''}`;
+        dateButton.className = `date-card ${isSelected ? 'active' : ''} ${isToday ? 'today' : ''}`;
         dateButton.type = 'button';
         dateButton.innerHTML = `
             <span class="date-day">${formatDayName(date)}</span>
             <span class="date-number">${date.getDate()}</span>
+            <span class="date-count">${todoCount}개</span>
         `;
         dateButton.addEventListener('click', () => selectDate(date));
 
         dateListElement.appendChild(dateButton);
     });
+}
+
+function getTodoCountByDate(dateKey) {
+    return todos.filter(todo => todo.date === dateKey).length;
 }
 
 function getWeekDates(date) {
@@ -168,6 +177,7 @@ function formatDayName(date) {
 function deleteTodo(todoId) {
     todos = todos.filter(todo => todo.id !== todoId);
     saveTodosToStorage();
+    renderDatePicker();
     renderTodos();
 }
 
@@ -181,6 +191,7 @@ function toggleComplete(todoId) {
     });
 
     saveTodosToStorage();
+    renderDatePicker();
     renderTodos();
 }
 
@@ -213,6 +224,7 @@ function saveEdit(todoId, newText) {
     });
 
     saveTodosToStorage();
+    renderDatePicker();
     renderTodos();
 }
 
