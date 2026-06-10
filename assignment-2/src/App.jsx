@@ -14,9 +14,9 @@ function App() {
   const { currentFilter, setCurrentFilter, filteredTodos } = useFilter(todos, selectedDate);
 
   return (
-    <div className="container">
-      <header>
-          <h1>My Todos</h1>
+    <div className="bg-white w-full max-w-[480px] rounded-[30px] shadow-[0_10px_30px_rgba(150,150,150,0.08)] p-8 m-5">
+      <header className="mb-6 text-center">
+          <h1 className="text-[#5f1bd5] text-[28px] font-bold">My Todos</h1>
       </header>
       <WeekCalendar 
         selectedDate={selectedDate} 

@@ -12,13 +12,13 @@ export default function WeekCalendar({ selectedDate, changeSelectedDate, selectD
     };
 
     return (
-        <div className="date-section">
+        <div className="mb-5">
             <CalendarHeader 
                 weekStartDate={weekStartDate} 
                 weekEndDate={weekEndDate} 
                 changeSelectedDate={changeSelectedDate} 
             />
-            <div id="date-list" className="date-list">
+            <div id="date-list" className="grid grid-cols-7 gap-1 mt-1">
                 {weekDates.map((date) => (
                     <DateCard 
                         key={formatDateKey(date)} 
