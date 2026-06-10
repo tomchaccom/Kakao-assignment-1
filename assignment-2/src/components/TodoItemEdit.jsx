@@ -16,6 +16,7 @@ export default function TodoItemEdit({ todo, saveEdit, cancelEdit }) {
     };
 
     const handleKeyDown = (e) => {
+        if (e.nativeEvent.isComposing) return;
         if (e.key === 'Enter') {
             handleSave();
         }

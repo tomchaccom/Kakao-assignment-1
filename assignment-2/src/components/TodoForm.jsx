@@ -11,6 +11,7 @@ export default function TodoForm({ addTodo }) {
     };
 
     const handleKeyDown = (e) => {
+        if (e.nativeEvent.isComposing) return;
         if (e.key === 'Enter') {
             handleAdd();
         }
