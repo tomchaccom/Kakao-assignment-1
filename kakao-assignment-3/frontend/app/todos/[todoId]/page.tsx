@@ -30,7 +30,7 @@ export default async function EditTodoPage({
     <main className="mx-auto min-h-screen w-full max-w-xl px-5 py-12">
       <section className="rounded-[28px] bg-white p-6 shadow-[0_16px_50px_rgba(72,48,110,0.12)] sm:p-8">
         <Link
-          href="/todos"
+          href={`/todos?date=${todo.date}`}
           className="mb-6 inline-flex text-sm font-semibold text-[#6f5f84] hover:text-[#5f1bd5]"
         >
           ← 목록으로

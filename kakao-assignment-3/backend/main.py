@@ -1,12 +1,13 @@
 import os
+from datetime import date
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Literal
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Boolean, Column, Integer, String, create_engine
+from sqlalchemy import Boolean, Column, Integer, String, create_engine, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
@@ -48,12 +49,14 @@ class Todo(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     completed = Column(Boolean, nullable=False, default=False)
+    date = Column(String, nullable=False, index=True)
 
 
 # Pydantic 스키마 (요청/응답 데이터 구조 정의)
 class TodoCreate(BaseModel):
     title: str
     completed: bool = False
+    date: date
 
 
 class TodoResponse(TodoCreate):
@@ -64,6 +67,25 @@ class TodoResponse(TodoCreate):
 
 # 테이블 생성
 Base.metadata.create_all(bind=engine)
+
+
+def migrate_todo_date_column():
+    todo_columns = {
+        column["name"] for column in inspect(engine).get_columns(Todo.__tablename__)
+    }
+    if "date" in todo_columns:
+        return
+
+    today = date.today().isoformat()
+    with engine.begin() as connection:
+        connection.execute(text("ALTER TABLE todos ADD COLUMN date VARCHAR"))
+        connection.execute(
+            text("UPDATE todos SET date = :today WHERE date IS NULL OR date = ''"),
+            {"today": today},
+        )
+
+
+migrate_todo_date_column()
 
 
 # FastAPI 앱 생성
@@ -91,8 +113,33 @@ def get_db() -> Generator[Session, None, None]:
 
 # 전체 Todo 목록 조회
 @app.get("/todos", response_model=list[TodoResponse])
-def get_todos(db: Session = Depends(get_db)):
-    return db.query(Todo).order_by(Todo.id).all()
+def get_todos(
+    selected_date: date | None = Query(default=None, alias="date"),
+    todo_filter: Literal["active", "completed"] | None = Query(
+        default=None,
+        alias="filter",
+    ),
+    search: str | None = Query(default=None, max_length=100),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Todo)
+    if selected_date is not None:
+        query = query.filter(Todo.date == selected_date.isoformat())
+    if todo_filter == "active":
+        query = query.filter(Todo.completed.is_(False))
+    elif todo_filter == "completed":
+        query = query.filter(Todo.completed.is_(True))
+    if search and search.strip():
+        escaped_search = (
+            search.strip()
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        )
+        query = query.filter(
+            Todo.title.ilike(f"%{escaped_search}%", escape="\\")
+        )
+    return query.order_by(Todo.id).all()
 
 
 # 새 Todo 생성
@@ -102,7 +149,11 @@ def get_todos(db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
 )
 def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
-    new_todo = Todo(title=todo.title, completed=todo.completed)
+    new_todo = Todo(
+        title=todo.title,
+        completed=todo.completed,
+        date=todo.date.isoformat(),
+    )
     db.add(new_todo)
     db.commit()
     db.refresh(new_todo)
@@ -121,6 +172,7 @@ def update_todo(id: int, todo: TodoCreate, db: Session = Depends(get_db)):
 
     existing_todo.title = todo.title
     existing_todo.completed = todo.completed
+    existing_todo.date = todo.date.isoformat()
     db.commit()
     db.refresh(existing_todo)
     return existing_todo

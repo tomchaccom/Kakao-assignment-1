@@ -11,6 +11,7 @@ type TodoFormAction = (
 
 type TodoFormProps = {
   action: TodoFormAction;
+  selectedDateKey?: string;
   submitLabel: string;
   todo?: Todo;
 };
@@ -21,6 +22,7 @@ const initialState: TodoFormState = {
 
 export default function TodoForm({
   action,
+  selectedDateKey,
   submitLabel,
   todo,
 }: TodoFormProps) {
@@ -43,6 +45,23 @@ export default function TodoForm({
           placeholder="할 일을 입력하세요"
           required
           autoFocus
+          className="w-full rounded-2xl border border-[#ded6eb] bg-white px-4 py-3 text-[#26212f] outline-none transition focus:border-[#6b32d5] focus:ring-4 focus:ring-[#6b32d5]/10"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="date"
+          className="mb-2 block text-sm font-semibold text-[#4b4357]"
+        >
+          날짜
+        </label>
+        <input
+          id="date"
+          name="date"
+          type="date"
+          defaultValue={todo?.date ?? selectedDateKey}
+          required
           className="w-full rounded-2xl border border-[#ded6eb] bg-white px-4 py-3 text-[#26212f] outline-none transition focus:border-[#6b32d5] focus:ring-4 focus:ring-[#6b32d5]/10"
         />
       </div>

@@ -17,8 +17,8 @@ async function proxyRequest(path: string, init?: RequestInit) {
     const response = await fetch(
       `${BACKEND_URL.replace(/\/$/, "")}/todos${path}`,
       {
-      ...init,
-      cache: "no-store",
+        ...init,
+        cache: "no-store",
       },
     );
     const body = response.status === 204 ? null : await response.text();
@@ -38,8 +38,27 @@ async function proxyRequest(path: string, init?: RequestInit) {
   }
 }
 
-export async function GET() {
-  return proxyRequest("");
+export async function GET(request: Request) {
+  const requestParams = new URL(request.url).searchParams;
+  const backendParams = new URLSearchParams();
+  const selectedDate = requestParams.get("date");
+  const filter = requestParams.get("filter");
+  const search = requestParams.get("search");
+
+  if (selectedDate) {
+    backendParams.set("date", selectedDate);
+  }
+  if (filter) {
+    backendParams.set("filter", filter);
+  }
+  if (search) {
+    backendParams.set("search", search);
+  }
+
+  const query = backendParams.toString();
+  const path = query ? `?${query}` : "";
+
+  return proxyRequest(path);
 }
 
 export async function POST(request: Request) {
